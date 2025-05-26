@@ -1,100 +1,82 @@
-import { create } from 'zustand'
-import { User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
+import { create } from 'zustand';
+import { supabase } from '../lib/supabase';
 
-interface AuthState {
-  user: User | null
-  profile: any | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, fullName: string) => Promise<void>
-  signOut: () => Promise<void>
-  updateProfile: (updates: any) => Promise<void>
-  initialize: () => Promise<void>
+interface Analysis {
+  id: string;
+  repository_url: string;
+  analysis_type: 'structure' | 'code_summary' | 'ai_enhanced';
+  content: any;
+  created_at: string;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  profile: null,
-  loading: true,
+interface AnalysisState {
+  analyses: Analysis[];
+  currentAnalysis: Analysis | null;
+  loading: boolean;
+  saveAnalysis: (
+    analysis: Omit<Analysis, 'id' | 'created_at'>
+  ) => Promise<void>;
+  loadAnalyses: (userId: string) => Promise<void>;
+  deleteAnalysis: (id: string) => Promise<void>;
+}
 
-  signIn: async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-  },
+export const useAnalysisStore = create<AnalysisState>((set, get) => ({
+  analyses: [],
+  currentAnalysis: null,
+  loading: false,
 
-  signUp: async (email: string, password: string, fullName: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    })
-    if (error) throw error
-
-    if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        email: data.user.email!,
-        full_name: fullName,
-        subscription_tier: 'free',
-        usage_count: 0,
-      })
-    }
-  },
-
-  signOut: async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    set({ user: null, profile: null })
-  },
-
-  updateProfile: async (updates: any) => {
-    const { user } = get()
-    if (!user) throw new Error('No user found')
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-
-    if (error) throw error
-
-    set((state) => ({
-      profile: { ...state.profile, ...updates }
-    }))
-  },
-
-  initialize: async () => {
+  saveAnalysis: async (analysis) => {
+    set({ loading: true });
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+      const { data, error } = await supabase
+        .from('analyses')
+        .insert(analysis)
+        .select()
+        .single();
 
-        set({ user: session.user, profile, loading: false })
-      } else {
-        set({ user: null, profile: null, loading: false })
-      }
+      if (error) throw error;
+
+      set((state) => ({
+        analyses: [data, ...state.analyses],
+        loading: false,
+      }));
     } catch (error) {
-      console.error('Auth initialization error:', error)
-      set({ loading: false })
+      console.error('Error saving analysis:', error);
+      set({ loading: false });
+      throw error;
     }
   },
-}))
 
-// Listen to auth changes
-supabase.auth.onAuthStateChange(async (event, session) => {
-  const { initialize } = useAuthStore.getState()
-  await initialize()
-})
+  loadAnalyses: async (userId: string) => {
+    set({ loading: true });
+    try {
+      const { data, error } = await supabase
+        .from('analyses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      set({ analyses: data || [], loading: false });
+    } catch (error) {
+      console.error('Error loading analyses:', error);
+      set({ loading: false });
+    }
+  },
+
+  deleteAnalysis: async (id: string) => {
+    try {
+      const { error } = await supabase.from('analyses').delete().eq('id', id);
+
+      if (error) throw error;
+
+      set((state) => ({
+        analyses: state.analyses.filter((a) => a.id !== id),
+      }));
+    } catch (error) {
+      console.error('Error deleting analysis:', error);
+      throw error;
+    }
+  },
+}));

@@ -39,7 +39,7 @@ export default function SignIn() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2 mb-6">
             <Code className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">DevContext Pro</span>
+            <span className="text-2xl font-bold text-gray-900">GitSense</span>
           </Link>
           <h2 className="text-3xl font-bold text-gray-900">
             Sign in to your account

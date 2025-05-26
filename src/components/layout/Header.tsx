@@ -13,7 +13,7 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center space-x-2">
             <Code className="h-8 w-8 text-primary-600" />
-            <span className="text-xl font-bold text-gray-900">DevContext Pro</span>
+            <span className="text-xl font-bold text-gray-900">GitSense</span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
