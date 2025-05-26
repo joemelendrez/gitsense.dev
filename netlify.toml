@@ -1,14 +1,20 @@
 [build]
-  command = "npm run build && npm run export"
+  command = "npm run export"
   functions = "netlify/functions"
   publish = "out"
 
 [build.environment]
-  NODE_VERSION = "20"  # Change from 18 to 20
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
 
 [[headers]]

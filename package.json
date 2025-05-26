@@ -2,12 +2,12 @@
   "name": "gitsense.dev",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
+ "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "export": "next export"
+    "export": "next build && next export",
+    "lint": "next lint"
   },
   "dependencies": {
     "@netlify/functions": "^3.1.9",

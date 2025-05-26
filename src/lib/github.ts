@@ -1,4 +1,5 @@
-import { Octokit } from '@octokit/rest';
+// src/lib/github.ts
+import { Octokit } from '@octokit/rest'; // ← ADD THIS LINE!
 
 export class GitHubService {
   private octokit: Octokit;
@@ -6,53 +7,86 @@ export class GitHubService {
 
   constructor(token?: string) {
     this.token = token || process.env.GITHUB_TOKEN;
+
+    // Fix: Create Octokit instance even without token
     this.octokit = new Octokit({
-      auth: this.token,
+      auth: this.token || undefined, // Don't pass empty string
     });
   }
 
   async testConnection() {
     try {
+      if (!this.token) {
+        // For public access without token
+        return {
+          success: true,
+          user: 'Anonymous',
+          scopes: 'Public access only',
+          rateLimit: '60 requests/hour',
+        };
+      }
+
+      // With token - get authenticated user
       const { data } = await this.octokit.users.getAuthenticated();
       return {
         success: true,
         user: data.login,
-        // Fix: Safely access permissions with fallback
-        scopes: (data as any).permissions || 'Unknown',
+        scopes: (data as any)?.permissions ?? 'Authenticated',
         avatar: data.avatar_url,
-        name: data.name || data.login,
       };
     } catch (error: any) {
       return {
         success: false,
-        error: error.message || 'Authentication failed',
-        status: error.status,
+        error: error.message || 'Connection failed',
       };
     }
   }
 
   async getRepository(owner: string, repo: string) {
     try {
+      console.log(`Fetching repository: ${owner}/${repo}`);
+      console.log(`Using token: ${this.token ? 'Yes' : 'No'}`);
+
       const { data } = await this.octokit.repos.get({
         owner,
         repo,
       });
+
+      console.log('Repository data received:', {
+        name: data.name,
+        private: data.private,
+        language: data.language,
+      });
+
       return {
         success: true,
         repository: data,
         isPrivate: data.private,
       };
     } catch (error: any) {
+      console.error('Repository fetch error:', {
+        status: error.status,
+        message: error.message,
+        owner,
+        repo,
+      });
+
       if (error.status === 404) {
         throw new Error(
-          "Repository not found or you don't have access. For private repos, make sure you've added your GitHub token."
+          `Repository '${owner}/${repo}' not found or is private. ${
+            !this.token ? 'Try adding a GitHub token for private repos.' : ''
+          }`
         );
       }
       if (error.status === 403) {
         throw new Error(
-          'Access forbidden. Check your GitHub token permissions.'
+          'Access forbidden. You may have hit the rate limit or need a GitHub token.'
         );
       }
+      if (error.status === 401) {
+        throw new Error('Invalid GitHub token. Please check your token.');
+      }
+
       throw new Error(`Failed to fetch repository: ${error.message}`);
     }
   }
@@ -69,29 +103,7 @@ export class GitHubService {
       if (error.status === 404) {
         throw new Error(`Path not found: ${path}`);
       }
-      if (error.status === 403) {
-        throw new Error(
-          'Access forbidden. Check your GitHub token permissions.'
-        );
-      }
       throw new Error(`Failed to fetch contents: ${error.message}`);
-    }
-  }
-
-  async getFileContent(owner: string, repo: string, path: string) {
-    try {
-      const { data } = await this.octokit.repos.getContent({
-        owner,
-        repo,
-        path,
-      });
-
-      if ('content' in data && !Array.isArray(data)) {
-        return Buffer.from(data.content, 'base64').toString();
-      }
-      throw new Error('File content not found or is a directory');
-    } catch (error: any) {
-      throw new Error(`Failed to fetch file content: ${error.message}`);
     }
   }
 
@@ -110,7 +122,7 @@ export class GitHubService {
       const items = Array.isArray(contents) ? contents : [contents];
 
       // Limit items to prevent API abuse and timeout
-      for (const item of items.slice(0, 50)) {
+      for (const item of items.slice(0, 20)) {
         if (item.type === 'dir' && maxDepth > 1) {
           try {
             const children = await this.getDirectoryTree(
@@ -160,31 +172,6 @@ export class GitHubService {
         remaining: 0,
         reset: new Date(),
         used: 0,
-      };
-    }
-  }
-
-  // Helper method to check if token has specific permissions
-  async checkPermissions(owner: string, repo: string) {
-    try {
-      const { data } = await this.octokit.repos.get({
-        owner,
-        repo,
-      });
-
-      return {
-        canRead: true,
-        canWrite: data.permissions?.push || false,
-        canAdmin: data.permissions?.admin || false,
-        isPrivate: data.private,
-      };
-    } catch (error: any) {
-      return {
-        canRead: false,
-        canWrite: false,
-        canAdmin: false,
-        isPrivate: true,
-        error: error.message,
       };
     }
   }

@@ -93,6 +93,38 @@ export const GitHubAnalyzer: React.FC = () => {
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  // Helper function to count files in tree
+  const countFiles = (tree: any[]): number => {
+    return tree.reduce((count, item) => {
+      if (item.type === 'file') return count + 1;
+      if (item.children) return count + countFiles(item.children);
+      return count;
+    }, 0);
+  };
+
+  // Rate limit check function
+  const checkRateLimit = async () => {
+    try {
+      const github = new GitHubService(userToken || undefined);
+      const rateLimit = await github.getRateLimit();
+
+      console.log('GitHub Rate Limit:', rateLimit);
+
+      if (rateLimit.remaining === 0) {
+        toast.error(
+          `Rate limit exceeded. Resets at ${rateLimit.reset.toLocaleTimeString()}`
+        );
+      } else {
+        toast.success(
+          `Rate limit: ${rateLimit.remaining}/${rateLimit.limit} remaining`
+        );
+      }
+    } catch (error) {
+      console.error('Rate limit check failed:', error);
+      toast.error('Failed to check rate limit');
+    }
+  };
+
   const analyzeRepository = async () => {
     if (!repoUrl.trim()) {
       toast.error('Please enter a repository URL');
@@ -110,7 +142,14 @@ export const GitHubAnalyzer: React.FC = () => {
     setLoading(true);
 
     try {
-      const github = new GitHubService(userToken);
+      // Always try to analyze, with or without token
+      const github = new GitHubService(userToken || undefined);
+
+      console.log('Analyzing repository:', {
+        owner,
+        repo,
+        hasToken: !!userToken,
+      });
 
       // Get repository info
       const repoResult = await github.getRepository(owner, repo);
@@ -132,18 +171,23 @@ export const GitHubAnalyzer: React.FC = () => {
         toast.success('Repository analyzed successfully!');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Analysis failed');
+      console.error('Analysis error:', error);
+
+      // Better error messages
+      if (error.message.includes('404')) {
+        toast.error(
+          "Repository not found. If it's private, add your GitHub token above."
+        );
+      } else if (error.message.includes('403')) {
+        toast.error(
+          'Access forbidden. Repository might be private or rate limited.'
+        );
+      } else {
+        toast.error(error.message || 'Analysis failed');
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const countFiles = (tree: any[]): number => {
-    return tree.reduce((count, item) => {
-      if (item.type === 'file') return count + 1;
-      if (item.children) return count + countFiles(item.children);
-      return count;
-    }, 0);
   };
 
   const copyAnalysis = () => {
@@ -152,6 +196,12 @@ export const GitHubAnalyzer: React.FC = () => {
       navigator.clipboard.writeText(summary);
       toast.success('Analysis copied to clipboard!');
     }
+  };
+
+  // Test public repositories
+  const testPublicRepo = (repoUrl: string) => {
+    setRepoUrl(repoUrl);
+    setUserToken(''); // Clear token to test public access
   };
 
   return (
@@ -170,6 +220,40 @@ export const GitHubAnalyzer: React.FC = () => {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Test buttons for public repos */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                testPublicRepo('https://github.com/facebook/react')
+              }
+            >
+              Test: React
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                testPublicRepo('https://github.com/microsoft/vscode')
+              }
+            >
+              Test: VS Code
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                testPublicRepo('https://github.com/vercel/next.js')
+              }
+            >
+              Test: Next.js
+            </Button>
+            <Button variant="outline" size="sm" onClick={checkRateLimit}>
+              Check Rate Limit
+            </Button>
+          </div>
+
           {/* URL Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -234,6 +318,18 @@ export const GitHubAnalyzer: React.FC = () => {
                   {analysis.stats.isPrivate ? 'Yes' : 'No'}
                 </div>
               </div>
+
+              {/* Display tree structure */}
+              {analysis.tree && analysis.tree.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    Directory Structure
+                  </h4>
+                  <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm max-h-64 overflow-y-auto">
+                    <pre>{JSON.stringify(analysis.tree, null, 2)}</pre>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
