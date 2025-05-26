@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 
+// Fix: Update interface to match database schema
 interface Analysis {
   id: string;
+  user_id: string; // This was missing or incorrectly named
   repository_url: string;
   analysis_type: 'structure' | 'code_summary' | 'ai_enhanced';
   content: any;
@@ -13,6 +15,7 @@ interface AnalysisState {
   analyses: Analysis[];
   currentAnalysis: Analysis | null;
   loading: boolean;
+  // Fix: Update the saveAnalysis parameter type
   saveAnalysis: (
     analysis: Omit<Analysis, 'id' | 'created_at'>
   ) => Promise<void>;
