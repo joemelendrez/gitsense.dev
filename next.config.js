@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
 
-  // Required for static export
+  // Fix: Use output export instead of next export command
   output: 'export',
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
@@ -20,10 +20,7 @@ const nextConfig = {
     GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   },
 
-  // Disable API routes for static export
-  experimental: {
-    appDir: false,
-  },
+  // Remove the experimental.appDir - it's not needed and causes warnings
 };
 
 module.exports = nextConfig;

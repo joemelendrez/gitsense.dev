@@ -1,11 +1,10 @@
 [build]
-  command = "npm run export"
+  command = "npm run build"
   functions = "netlify/functions"
   publish = "out"
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--legacy-peer-deps"
 
 [[redirects]]
   from = "/api/*"

@@ -1,6 +1,225 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js build outputs
+.next/
+out/
+build/
+dist/
+
+# Production builds  
+*.tgz
+*.tar.gz
+
+# Environment variables
 .env
 .env.local
-node_modules
-.next
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js cache
+.next/
+.vercel
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
 # Local Netlify folder
 .netlify
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Test files (if you don't want them in repo)
+# __tests__/
+# *.test.js
+# *.spec.js
+
+# Database files (if using local SQLite)
+*.sqlite
+*.sqlite3
+*.db
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Archive files
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Local development files
+.local/
+local/
+
+# Supabase (if using local development)
+supabase/.branches
+supabase/.temp
+
+# AI API keys and sensitive data
+.openai
+.anthropic
+keys/
+secrets/
+
+# Build artifacts
+build-artifacts/
+deployment/
+
+# Documentation builds
+docs/build/
+site/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Package manager files
+package-lock.json  # Only if using yarn
+yarn.lock         # Only if using npm
+
+# Generated files
+generated/
+auto-generated/
+
+# Local configuration
+config.local.js
+config.local.json
+
+# Sentry
+.sentryclirc
+
+# Firebase
+.firebaserc
+firebase-debug.log
+firebase-debug.*.log
+
+# Vercel
+.vercel
+
+# Serverless directories
+.serverless/
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+
+# Azure
+.azure/
+
+# Local database dumps
+*.dump
+*.sql.gz
+
+# Screenshots and recordings
+screenshots/
+recordings/
+*.mov
+*.mp4
+*.gif
+
+# Test results
+test-results/
+coverage/
+.coverage
+
+# Benchmarks
+benchmarks/
+performance/
