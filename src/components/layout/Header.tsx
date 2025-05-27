@@ -3,33 +3,40 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '../../store/auth';
 import { Button } from '../ui/Button';
-import { Code, Github, LogOut, Menu, X, ChevronDown, Book } from 'lucide-react';
+import { Code, Github, LogOut, Menu, X, ChevronDown, Book, FolderTree } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { user, profile, signOut } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
 
-  const tools = [
-    {
-      name: 'GitHub Analyzer',
-      href: '/tools/github-analyzer',
-      icon: Github,
-      description: 'Analyze repository structure',
-    },
-    {
-      name: 'Code Summarizer',
-      href: '/tools/code-summarizer',
-      icon: Code,
-      description: 'Optimize code for AI',
-    },
-    {
-      name: 'Markdown Renderer',
-      href: '/tools/markdown-renderer',
-      icon: Book,
-      description: 'Convert markdown to rich text',
-    },
-  ];
+  // In your Header.tsx, update the tools array:
+const tools = [
+  {
+    name: 'GitHub Analyzer',
+    href: '/tools/github-analyzer',
+    icon: Github,
+    description: 'Analyze repository structure',
+  },
+  {
+    name: 'Code Summarizer',
+    href: '/tools/code-summarizer',
+    icon: Code,
+    description: 'Optimize code for AI',
+  },
+  {
+    name: 'Markdown Renderer',
+    href: '/tools/markdown-renderer',
+    icon: Book,
+    description: 'Convert markdown to rich text',
+  },
+  {
+    name: 'Folder Generator',           // NEW TOOL
+    href: '/tools/folder-generator',    // NEW TOOL
+    icon: FolderTree,                   // NEW TOOL (import from lucide-react)
+    description: 'Generate project scaffolds', // NEW TOOL
+  },
+];
 
   // Handle dropdown with proper timing
   const handleDropdownEnter = () => {

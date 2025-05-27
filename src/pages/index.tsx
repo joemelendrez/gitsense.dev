@@ -82,6 +82,15 @@ export default function HomePage() {
                   prompts for better AI conversations.
                 </p>
               </div>
+              // Add to your features grid:
+<div className="text-center p-6">
+  <FolderTree className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+  <h3 className="text-xl font-semibold mb-3">Folder Generator</h3>
+  <p className="text-gray-600">
+    Convert text structures into downloadable project scaffolds.
+    Perfect for setting up new projects.
+  </p>
+</div>
             </div>
           </div>
         </section>
