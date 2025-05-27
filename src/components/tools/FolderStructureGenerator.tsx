@@ -77,40 +77,6 @@ const FolderStructureGenerator = () => {
     return structure;
   };
 
-  // Generate zip file content
-  const generateZipFile = async (structure) => {
-    // We'll use JSZip library simulation - in real implementation you'd import JSZip
-    const files = [];
-    
-    const traverse = (items, currentPath = '') => {
-      items.forEach(item => {
-        const fullPath = currentPath ? `${currentPath}/${item.name}` : item.name;
-        
-        if (item.isFolder) {
-          // Add folder (empty file to create directory)
-          files.push({
-            path: `${fullPath}/.gitkeep`,
-            content: '# This file ensures the directory is created\n'
-          });
-          
-          if (item.children && item.children.length > 0) {
-            traverse(item.children, fullPath);
-          }
-        } else {
-          // Add file with basic content based on extension
-          const content = generateFileContent(item.name);
-          files.push({
-            path: fullPath,
-            content
-          });
-        }
-      });
-    };
-
-    traverse(structure);
-    return files;
-  };
-
   // Generate appropriate content for different file types
   const generateFileContent = (filename) => {
     const ext = filename.split('.').pop()?.toLowerCase();
