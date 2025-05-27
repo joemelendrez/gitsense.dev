@@ -1,19 +1,9 @@
-// src/components/layout/Header.tsx - Mobile-friendly with tools
+// src/components/layout/Header.tsx - Fixed hover behavior
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '../../store/auth';
 import { Button } from '../ui/Button';
-import {
-  Code,
-  Github,
-  LogOut,
-  Menu,
-  X,
-  ChevronDown,
-  Book,
-
-
-} from 'lucide-react';
+import { Code, Github, LogOut, Menu, X, ChevronDown, Book } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { user, profile, signOut } = useAuthStore();
@@ -41,6 +31,22 @@ export const Header: React.FC = () => {
     },
   ];
 
+  // Handle dropdown with proper timing
+  const handleDropdownEnter = () => {
+    setIsToolsDropdownOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    // Small delay to prevent flickering when moving between elements
+    setTimeout(() => {
+      setIsToolsDropdownOpen(false);
+    }, 100);
+  };
+
+  const handleDropdownClick = () => {
+    setIsToolsDropdownOpen(!isToolsDropdownOpen);
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,27 +62,31 @@ export const Header: React.FC = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {/* Tools Dropdown */}
-            <div className="relative">
+            <div
+              className="relative"
+              onMouseEnter={handleDropdownEnter}
+              onMouseLeave={handleDropdownLeave}
+            >
               <button
-                onMouseEnter={() => setIsToolsDropdownOpen(true)}
-                onMouseLeave={() => setIsToolsDropdownOpen(false)}
-                className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={handleDropdownClick}
+                className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors py-2"
               >
                 <span>Tools</span>
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${
+                    isToolsDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
               </button>
 
               {isToolsDropdownOpen && (
-                <div
-                  className="absolute top-full left-0 mt-1 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
-                  onMouseEnter={() => setIsToolsDropdownOpen(true)}
-                  onMouseLeave={() => setIsToolsDropdownOpen(false)}
-                >
+                <div className="absolute top-full left-0 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                   {tools.map((tool) => (
                     <Link
                       key={tool.href}
                       href={tool.href}
                       className="flex items-start space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsToolsDropdownOpen(false)}
                     >
                       <tool.icon className="h-5 w-5 text-blue-600 mt-0.5" />
                       <div>

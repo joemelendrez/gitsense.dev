@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-// Import your existing Header component
 import { Header } from '../../components/layout/Header';
 import {
   Book,
@@ -205,7 +204,6 @@ Ready to optimize your development workflow? **[Get Started with GitSense](https
   return (
     <>
       <Head>
-        <Header />
         <title>
           Markdown Renderer - GitSense.dev | AI-Optimized Documentation Tool
         </title>
@@ -216,8 +214,8 @@ Ready to optimize your development workflow? **[Get Started with GitSense](https
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        {/* Import and use your Header component here */}
-        {/* <Header /> */}
+ 
+        <Header />
 
         <div className={`max-w-7xl mx-auto pt-20 pb-12 px-4 ${className}`}>
           {/* Hero Header */}
@@ -342,11 +340,11 @@ Ready to optimize your development workflow? **[Get Started with GitSense](https
           </div>
 
           {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[600px]">
             {/* Editor */}
             {!isPreviewMode && (
-              <div className="flex flex-col">
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
+              <div className="flex flex-col min-h-[600px]">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full min-h-[600px]">
                   <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
                     <h3 className="font-semibold text-gray-700 flex items-center">
                       <Code className="w-4 h-4 mr-2" />
@@ -378,11 +376,11 @@ Perfect for AI conversations and documentation!"
 
             {/* Preview */}
             <div
-              className={`flex flex-col ${
+              className={`flex flex-col min-h-[600px] ${
                 !isPreviewMode ? '' : 'lg:col-span-2'
               }`}
             >
-              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
+              <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full min-h-[600px]">
                 <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
                   <h3 className="font-semibold text-gray-700 flex items-center">
                     <Eye className="w-4 h-4 mr-2" />
@@ -478,7 +476,7 @@ Perfect for AI conversations and documentation!"
                 <Link href="/tools/github-analyzer">
                   <Button
                     variant="secondary"
-                    className="bg-white text-blue-600 hover:bg-gray-100"
+                    className="bg-gray-200 text-blue-600 hover:bg-gray-100"
                   >
                     GitHub Analyzer
                   </Button>
@@ -486,7 +484,7 @@ Perfect for AI conversations and documentation!"
                 <Link href="/tools/code-summarizer">
                   <Button
                     variant="secondary"
-                    className="bg-white text-purple-600 hover:bg-gray-100"
+                    className="bg-gray-200 text-purple-600 hover:bg-gray-100"
                   >
                     Code Summarizer
                   </Button>
