@@ -5,21 +5,46 @@ import { useAuthStore } from '../store/auth'
 import { useAnalysisStore } from '../store/analysis'
 import { Button } from '../components/ui/Button'
 import { Github, Code, Zap, Calendar, Download, Trash2 } from 'lucide-react'
+import { SavedAnalyses } from '../components/SavedAnalyses';
 
 export default function Dashboard() {
   const router = useRouter()
   const { user, profile } = useAuthStore()
   const { analyses, loading, loadAnalyses, deleteAnalysis } = useAnalysisStore()
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/signin')
-      return
-    }
-    loadAnalyses(user.id)
-  }, [user, loadAnalyses, router])
+  // useEffect(() => {
+  //  if (!user) {
+  //     router.push('/auth/signin')
+  //     return
+  //   }
+  //   loadAnalyses(user.id)
+  // }, [user, loadAnalyses, router])
 
-  if (!user) return null
+  //  if (!user) return null
+
+  useEffect(() => {
+    // Mock user for testing
+    const mockUserId = 'test-user-123';
+    if (user?.id) {
+      loadAnalyses(user.id);
+    } else {
+      // Use mock data for testing
+      console.log('Using mock user for testing');
+    }
+  }, [user, loadAnalyses, router]);
+
+  // Mock user data for testing
+  const displayUser = user || {
+    email: 'test@example.com',
+    id: 'test-user-123',
+  };
+
+  const displayProfile = profile || {
+    full_name: 'Test User',
+    subscription_tier: 'free',
+    usage_count: 5,
+  };
+  
 
   const getUsagePercentage = () => {
     if (!profile) return 0
@@ -48,17 +73,21 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto py-8 px-4">
         {/* Welcome Section */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome back, {profile?.full_name || user.email}!
+                {
+                  displayProfile?.full_name ||
+                    displayUser.email /* Welcome back, {profile?.full_name || user.email}! */
+                }
               </h1>
               <p className="text-gray-600">
-                Manage your code analyses and optimize your AI development workflow
+                Manage your code analyses and optimize your AI development
+                workflow
               </p>
             </div>
             <div className="text-right">
@@ -80,9 +109,14 @@ export default function Dashboard() {
             <div className="flex items-center">
               <Github className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Repositories</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Repositories
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {analyses.filter(a => a.analysis_type === 'structure').length}
+                  {
+                    analyses.filter((a) => a.analysis_type === 'structure')
+                      .length
+                  }
                 </p>
               </div>
             </div>
@@ -92,9 +126,14 @@ export default function Dashboard() {
             <div className="flex items-center">
               <Code className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Code Summaries</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Code Summaries
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {analyses.filter(a => a.analysis_type === 'code_summary').length}
+                  {
+                    analyses.filter((a) => a.analysis_type === 'code_summary')
+                      .length
+                  }
                 </p>
               </div>
             </div>
@@ -106,7 +145,10 @@ export default function Dashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">AI Enhanced</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {analyses.filter(a => a.analysis_type === 'ai_enhanced').length}
+                  {
+                    analyses.filter((a) => a.analysis_type === 'ai_enhanced')
+                      .length
+                  }
                 </p>
               </div>
             </div>
@@ -135,14 +177,14 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${getUsagePercentage()}%` }}
               />
             </div>
             {getUsagePercentage() > 80 && (
               <p className="text-sm text-orange-600 mt-2">
-                You're approaching your monthly limit. 
+                You're approaching your monthly limit.
                 <Button variant="ghost" size="sm" className="ml-1 p-0 h-auto">
                   Upgrade to Pro
                 </Button>
@@ -155,13 +197,23 @@ export default function Dashboard() {
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Recent Analyses</h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                Recent Analyses
+              </h2>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" onClick={() => router.push('/tools/github-analyzer')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/tools/github-analyzer')}
+                >
                   <Github className="h-4 w-4 mr-1" />
                   New Repository
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => router.push('/tools/code-summarizer')}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/tools/code-summarizer')}
+                >
                   <Code className="h-4 w-4 mr-1" />
                   Summarize Code
                 </Button>
@@ -179,7 +231,10 @@ export default function Dashboard() {
               <div className="p-8 text-center text-gray-500">
                 <Code className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No analyses yet</h3>
-                <p className="mb-4">Start by analyzing a GitHub repository or summarizing some code</p>
+                <p className="mb-4">
+                  Start by analyzing a GitHub repository or summarizing some
+                  code
+                </p>
                 <div className="flex justify-center space-x-2">
                   <Button onClick={() => router.push('/tools/github-analyzer')}>
                     Analyze Repository
@@ -196,26 +251,30 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-900">
-                          {analysis.repository_url === 'code-snippet' 
-                            ? 'Code Snippet Analysis' 
-                            : analysis.repository_url.split('/').slice(-2).join('/')
-                          }
+                          {analysis.repository_url === 'code-snippet'
+                            ? 'Code Snippet Analysis'
+                            : analysis.repository_url
+                                .split('/')
+                                .slice(-2)
+                                .join('/')}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {analysis.analysis_type.replace('_', ' ')} • {formatDate(analysis.created_at)}
+                          {analysis.analysis_type.replace('_', ' ')} •{' '}
+                          {formatDate(analysis.created_at)}
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          const content = typeof analysis.content === 'string' 
-                            ? analysis.content 
-                            : JSON.stringify(analysis.content, null, 2)
-                          navigator.clipboard.writeText(content)
+                          const content =
+                            typeof analysis.content === 'string'
+                              ? analysis.content
+                              : JSON.stringify(analysis.content, null, 2);
+                          navigator.clipboard.writeText(content);
                         }}
                       >
                         <Download className="h-4 w-4" />
@@ -235,7 +294,11 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        <div className="mt-8">
+          <SavedAnalyses />
+        </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,0 +1,42 @@
+# public/robots.txt
+User-agent: *
+Allow: /
+
+# Allow important pages
+Allow: /tools/
+Allow: /auth/
+Allow: /dashboard/
+
+# Disallow private/admin areas
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /netlify/
+
+# Disallow user-specific content
+Disallow: /dashboard/
+Disallow: /profile/
+
+# Allow search engines to find important resources
+Allow: /sitemap.xml
+Allow: /favicon.ico
+Allow: /*.css
+Allow: /*.js
+
+# Sitemap location
+Sitemap: https://gitsense.dev/sitemap.xml
+
+# Crawl delay (optional - be nice to servers)
+Crawl-delay: 1
+
+# Specific rules for different bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: facebookexternalhit
+Allow: /

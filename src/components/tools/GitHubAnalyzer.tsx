@@ -7,7 +7,6 @@ import {
   Github,
   Download,
   Copy,
-  Eye,
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
@@ -48,6 +47,7 @@ const GitHubTokenInput = ({
 
   return (
     <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+
       <h4 className="font-medium text-gray-900">Private Repository Access</h4>
       <div className="flex space-x-2">
         <Input
