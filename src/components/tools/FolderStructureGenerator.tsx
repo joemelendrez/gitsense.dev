@@ -13,6 +13,7 @@ import {
   Zap,
   Package
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const FolderStructureGenerator = () => {
   const [structure, setStructure] = useState('');
