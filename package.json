@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "jszip": "^3.10.1",
+    "@types/jszip": "^3.4.1",
     "@netlify/functions": "^3.1.9",
     "@octokit/rest": "^22.0.0",
     "@supabase/auth-ui-react": "^0.4.7",
