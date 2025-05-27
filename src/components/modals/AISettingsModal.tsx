@@ -1,5 +1,5 @@
-// src/components/modals/AISettingsModal.tsx
-import React, { useState } from 'react';
+// src/components/modals/AISettingsModal.tsx - SSR Safe
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface AIConfig {
@@ -16,20 +16,55 @@ interface AISettingsModalProps {
   currentConfig?: AIConfig;
 }
 
-export const AISettingsModal: React.FC<AISettingsModalProps> = ({
-  isOpen,
-  onClose,
-  onSave,
-  currentConfig,
+// Safe localStorage helper
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('Failed to save to localStorage:', error);
+    }
+  }
+};
+
+export const AISettingsModal: React.FC<AISettingsModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  currentConfig 
 }) => {
-  const [provider, setProvider] = useState<'openai' | 'claude'>(
-    currentConfig?.provider || 'openai'
-  );
-  const [apiKey, setApiKey] = useState(currentConfig?.apiKey || '');
-  const [model, setModel] = useState(currentConfig?.model || '');
-  const [useServerless, setUseServerless] = useState(
-    currentConfig?.useServerless !== false // Default to true
-  );
+  const [provider, setProvider] = useState<'openai' | 'claude'>('openai');
+  const [apiKey, setApiKey] = useState('');
+  const [model, setModel] = useState('');
+  const [useServerless, setUseServerless] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Initialize state after component mounts (client-side only)
+  useEffect(() => {
+    setMounted(true);
+    
+    // Load current config or from localStorage
+    const config = currentConfig || (() => {
+      const configData = safeLocalStorage.getItem('gitsense_ai_config');
+      return configData ? JSON.parse(configData) : null;
+    })();
+
+    if (config) {
+      setProvider(config.provider || 'openai');
+      setApiKey(config.apiKey || '');
+      setModel(config.model || '');
+      setUseServerless(config.useServerless !== false);
+    }
+  }, [currentConfig]);
 
   const handleSave = () => {
     if (!useServerless && !apiKey.trim()) {
@@ -44,8 +79,8 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({
       useServerless,
     };
 
-    // Save to localStorage for persistence
-    localStorage.setItem('gitsense_ai_config', JSON.stringify(config));
+    // Save to localStorage
+    safeLocalStorage.setItem('gitsense_ai_config', JSON.stringify(config));
     onSave(config);
     onClose();
     toast.success('AI settings saved!');
@@ -55,7 +90,8 @@ export const AISettingsModal: React.FC<AISettingsModalProps> = ({
     return provider === 'openai' ? 'gpt-4o-mini' : 'claude-3-haiku-20240307';
   };
 
-  if (!isOpen) return null;
+  // Don't render until mounted (prevents SSR hydration issues)
+  if (!mounted || !isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

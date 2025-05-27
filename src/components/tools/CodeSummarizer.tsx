@@ -1,7 +1,6 @@
-// src/components/tools/CodeSummarizer.tsx - Fixed with proper imports
-import React, { useState, useRef } from 'react';
+// src/components/tools/CodeSummarizer.tsx - Complete SSR-Safe Version
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 import { useAuthStore } from '../../store/auth';
 import { useAnalysisStore } from '../../store/analysis';
 import {
@@ -44,18 +43,40 @@ export const CodeSummarizer: React.FC = () => {
   const [includeAI, setIncludeAI] = useState(false);
   const [summary, setSummary] = useState<SummaryResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [aiConfigured, setAiConfigured] = useState(isAIConfigured());
+  const [aiConfigured, setAiConfigured] = useState(false);
   const [showAISettings, setShowAISettings] = useState(false);
   const [viewMode, setViewMode] = useState<'structural' | 'ai' | 'both'>(
     'structural'
   );
+  const [mounted, setMounted] = useState(false);
 
   const { user } = useAuthStore();
   const { saveAnalysis } = useAnalysisStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check AI configuration on component mount
-  React.useEffect(() => {
+  // Safe localStorage helper
+  const safeLocalStorage = {
+    getItem: (key: string): string | null => {
+      if (typeof window === 'undefined') return null;
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    setItem: (key: string, value: string): void => {
+      if (typeof window === 'undefined') return;
+      try {
+        localStorage.setItem(key, value);
+      } catch (error) {
+        console.warn('Failed to save to localStorage:', error);
+      }
+    },
+  };
+
+  // Check AI configuration after component mounts (client-side only)
+  useEffect(() => {
+    setMounted(true);
     setAiConfigured(isAIConfigured());
   }, []);
 
@@ -98,18 +119,20 @@ export const CodeSummarizer: React.FC = () => {
 
           result.aiEnhanced = aiSummary;
 
-          // Calculate estimated cost
-          const configData = localStorage.getItem('gitsense_ai_config');
-          if (configData) {
-            const config = JSON.parse(configData);
-            result.stats.estimatedCost = estimateTokenCost(
-              code + structuralSummary,
-              config.provider
-            );
+          // Calculate estimated cost (SSR-safe)
+          if (mounted) {
+            const configData = safeLocalStorage.getItem('gitsense_ai_config');
+            if (configData) {
+              const config = JSON.parse(configData);
+              result.stats.estimatedCost = estimateTokenCost(
+                code + structuralSummary,
+                config.provider
+              );
+            }
           }
 
           toast.success('AI enhancement complete!', { id: 'ai-loading' });
-        } catch (error) {
+        } catch (error: any) {
           console.warn('AI enhancement failed:', error);
           toast.error(`AI enhancement failed: ${error.message}`, {
             id: 'ai-loading',
@@ -135,9 +158,7 @@ export const CodeSummarizer: React.FC = () => {
     }
   };
 
-  // Your existing helper functions remain the same
   const analyzeCodeStructure = async (code: string, language: string) => {
-    // ... (keep your existing analyzeCodeStructure function)
     const lines = code.split('\n');
     const detectedLang = language === 'auto' ? detectLanguage(code) : language;
 
@@ -164,7 +185,9 @@ export const CodeSummarizer: React.FC = () => {
       summary += `🏗️ CLASSES (${classes.length}):\n`;
       classes.forEach((cls) => {
         summary += `  📋 ${cls.name}\n`;
-        cls.methods.forEach((method) => (summary += `    ├─ ${method}\n`));
+        cls.methods.forEach(
+          (method: string) => (summary += `    ├─ ${method}\n`)
+        );
       });
       summary += '\n';
     }
@@ -192,7 +215,6 @@ export const CodeSummarizer: React.FC = () => {
     return summary;
   };
 
-  // Keep all your existing helper functions (detectLanguage, extractFunctions, etc.)
   const detectLanguage = (code: string): string => {
     if (code.includes('def ') && code.includes(':')) return 'python';
     if (code.includes('function ') || code.includes('=>')) return 'javascript';
@@ -207,18 +229,129 @@ export const CodeSummarizer: React.FC = () => {
   };
 
   const extractFunctions = (code: string, language: string) => {
-    // ... (keep your existing function)
-    return []; // Placeholder - use your existing implementation
+    const functions: any[] = [];
+    const lines = code.split('\n');
+
+    const patterns: { [key: string]: RegExp } = {
+      javascript:
+        /^(function\s+(\w+)\s*\(([^)]*)\)|const\s+(\w+)\s*=\s*(\([^)]*\))?\s*=>)/,
+      python: /^def\s+(\w+)\s*\(([^)]*)\):/,
+      java: /^(public|private|protected)?\s*(static\s+)?\w+\s+(\w+)\s*\(([^)]*)\)/,
+      typescript:
+        /^(function\s+(\w+)\s*\(([^)]*)\)|const\s+(\w+)\s*=\s*(\([^)]*\))?\s*=>)/,
+    };
+
+    const pattern = patterns[language];
+    if (!pattern) return functions;
+
+    lines.forEach((line, index) => {
+      const match = line.trim().match(pattern);
+      if (match) {
+        const name = match[2] || match[4] || match[3] || match[1];
+        const params = match[3] || match[5] || match[4] || match[2] || '';
+
+        // Extract key logic from next few lines
+        const keyLogic: string[] = [];
+        for (let i = index + 1; i < Math.min(index + 5, lines.length); i++) {
+          const logicLine = lines[i].trim();
+          if (
+            logicLine &&
+            !logicLine.startsWith('//') &&
+            !logicLine.startsWith('*')
+          ) {
+            if (
+              logicLine.includes('return') ||
+              logicLine.includes('if') ||
+              logicLine.includes('=')
+            ) {
+              keyLogic.push(
+                logicLine.substring(0, 60) +
+                  (logicLine.length > 60 ? '...' : '')
+              );
+            }
+          }
+          if (keyLogic.length >= 2) break;
+        }
+
+        functions.push({
+          name: name || 'anonymous',
+          params: params.replace(/\s+/g, ' '),
+          line: index + 1,
+          description:
+            index > 0 && lines[index - 1].trim().startsWith('//')
+              ? lines[index - 1].trim().substring(2).trim()
+              : null,
+          keyLogic,
+        });
+      }
+    });
+
+    return functions;
   };
 
   const extractClasses = (code: string, language: string) => {
-    // ... (keep your existing function)
-    return []; // Placeholder - use your existing implementation
+    const classes: any[] = [];
+    const lines = code.split('\n');
+
+    const patterns: { [key: string]: RegExp } = {
+      javascript: /^class\s+(\w+)/,
+      python: /^class\s+(\w+)(\([^)]*\))?:/,
+      java: /^(public\s+)?class\s+(\w+)/,
+      typescript: /^(export\s+)?(class\s+(\w+)|interface\s+(\w+))/,
+    };
+
+    const pattern = patterns[language];
+    if (!pattern) return classes;
+
+    lines.forEach((line, index) => {
+      const match = line.trim().match(pattern);
+      if (match) {
+        const name = match[3] || match[4] || match[2] || match[1];
+
+        const methods: string[] = [];
+        for (let i = index + 1; i < Math.min(index + 20, lines.length); i++) {
+          const methodMatch = lines[i]
+            .trim()
+            .match(/^\s*(public\s+|private\s+)?(\w+)\s*\(/);
+          if (methodMatch) {
+            methods.push(methodMatch[2] + '()');
+          }
+          if (methods.length >= 5) break;
+        }
+
+        classes.push({ name, methods });
+      }
+    });
+
+    return classes;
   };
 
   const extractImports = (code: string, language: string) => {
-    // ... (keep your existing function)
-    return []; // Placeholder - use your existing implementation
+    const imports: string[] = [];
+    const lines = code.split('\n');
+
+    const patterns: { [key: string]: RegExp[] } = {
+      javascript: [
+        /^import\s+.+from\s+['"`].+['"`]/,
+        /^const\s+.+=\s+require\(['"`].+['"`]\)/,
+      ],
+      python: [/^(import|from)\s+[\w.]+/],
+      java: [/^import\s+[\w.]+;/],
+      typescript: [/^import\s+.+from\s+['"`].+['"`]/],
+    };
+
+    const langPatterns = patterns[language] || patterns.javascript;
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      langPatterns.forEach((pattern) => {
+        if (pattern.test(trimmed)) {
+          imports.push(trimmed);
+        }
+      });
+    });
+
+    return imports;
   };
 
   const assessComplexity = (code: string): string => {
@@ -254,15 +387,45 @@ export const CodeSummarizer: React.FC = () => {
     };
   };
 
-  // Updated AI configuration handler
   const handleAIConfigSave = (config: any) => {
     setAiConfigured(true);
     toast.success('AI configuration saved! You can now use AI enhancement.');
   };
 
-  // Keep your existing file handling and other functions
   const loadFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // ... (keep your existing implementation)
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setCode(content);
+
+      // Auto-detect language from file extension
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      const langMap: { [key: string]: string } = {
+        js: 'javascript',
+        jsx: 'javascript',
+        ts: 'typescript',
+        tsx: 'typescript',
+        py: 'python',
+        java: 'java',
+        cpp: 'cpp',
+        c: 'cpp',
+        cs: 'csharp',
+        php: 'php',
+        go: 'go',
+        rs: 'rust',
+        rb: 'ruby',
+      };
+
+      if (extension && langMap[extension]) {
+        setLanguage(langMap[extension]);
+      }
+
+      toast.success(`Loaded ${file.name}`);
+    };
+    reader.readAsText(file);
   };
 
   const copyToClipboard = (content: string) => {
@@ -305,6 +468,76 @@ export const CodeSummarizer: React.FC = () => {
     } catch (error) {
       toast.error('Failed to save summary');
     }
+  };
+
+  const loadSampleCode = () => {
+    const sampleCode = `// E-commerce cart management system
+import React, { useState, useEffect } from 'react';
+import { calculateTax, validateCartItem } from '../utils/cart';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  category: string;
+}
+
+const ShoppingCart: React.FC = () => {
+  const [cart, setCart] = useLocalStorage<CartItem[]>('cart', []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [discount, setDiscount] = useState(0);
+
+  // Calculate total with tax and discount
+  const calculateTotal = () => {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const taxAmount = calculateTax(subtotal);
+    const discountAmount = subtotal * (discount / 100);
+    return subtotal + taxAmount - discountAmount;
+  };
+
+  // Add item to cart with validation
+  const addToCart = async (newItem: CartItem) => {
+    setIsLoading(true);
+    try {
+      if (!validateCartItem(newItem)) {
+        throw new Error('Invalid cart item');
+      }
+
+      const existingItem = cart.find(item => item.id === newItem.id);
+      
+      if (existingItem) {
+        setCart(cart.map(item =>
+          item.id === newItem.id
+            ? { ...item, quantity: item.quantity + newItem.quantity }
+            : item
+        ));
+      } else {
+        setCart([...cart, newItem]);
+      }
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="shopping-cart">
+      <h2>Shopping Cart ({cart.length} items)</h2>
+      <div className="cart-total">
+        <strong>Total: \${calculateTotal().toFixed(2)}</strong>
+      </div>
+    </div>
+  );
+};
+
+export default ShoppingCart;`;
+
+    setCode(sampleCode);
+    setLanguage('typescript');
+    toast.success('Sample code loaded!');
   };
 
   return (
@@ -356,9 +589,7 @@ export const CodeSummarizer: React.FC = () => {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      /* loadSampleCode */
-                    }}
+                    onClick={loadSampleCode}
                   >
                     <FileText className="h-4 w-4 mr-1" />
                     Sample
@@ -461,8 +692,8 @@ export const CodeSummarizer: React.FC = () => {
                 </div>
               )}
 
-              {/* Cost Estimation */}
-              {includeAI && aiConfigured && code && (
+              {/* Cost Estimation - SSR Safe */}
+              {includeAI && aiConfigured && code && mounted && (
                 <div className="bg-green-50 border border-green-200 rounded-md p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <DollarSign className="h-4 w-4 text-green-600" />
@@ -474,7 +705,7 @@ export const CodeSummarizer: React.FC = () => {
                     ~$
                     {(() => {
                       const configData =
-                        localStorage.getItem('gitsense_ai_config');
+                        safeLocalStorage.getItem('gitsense_ai_config');
                       if (configData) {
                         const config = JSON.parse(configData);
                         return estimateTokenCost(code, config.provider).toFixed(
@@ -654,13 +885,14 @@ export const CodeSummarizer: React.FC = () => {
         </div>
       </div>
 
-      {/* AI Settings Modal */}
+      {/* AI Settings Modal - SSR Safe */}
       <AISettingsModal
         isOpen={showAISettings}
         onClose={() => setShowAISettings(false)}
         onSave={handleAIConfigSave}
         currentConfig={(() => {
-          const configData = localStorage.getItem('gitsense_ai_config');
+          if (!mounted) return undefined;
+          const configData = safeLocalStorage.getItem('gitsense_ai_config');
           return configData ? JSON.parse(configData) : undefined;
         })()}
       />

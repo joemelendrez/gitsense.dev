@@ -1,11 +1,11 @@
-// src/lib/ai-service.ts - Fixed version without React imports
+// src/lib/ai-service.ts - Fixed for SSR compatibility
 import { toast } from 'react-hot-toast';
 
 interface AIConfig {
   provider: 'openai' | 'claude';
-  apiKey?: string; // Optional for user's own keys
+  apiKey?: string;
   model?: string;
-  useServerless?: boolean; // Use Netlify function or direct API
+  useServerless?: boolean;
 }
 
 interface AIResponse {
@@ -17,12 +17,40 @@ interface AIResponse {
   };
 }
 
+// Helper function to safely access localStorage
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('Failed to save to localStorage:', error);
+    }
+  },
+  removeItem: (key: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn('Failed to remove from localStorage:', error);
+    }
+  },
+};
+
 export class AIService {
   private config: AIConfig;
 
   constructor(config: AIConfig) {
     this.config = {
-      useServerless: true, // Default to using Netlify function
+      useServerless: true,
       ...config,
     };
   }
@@ -40,7 +68,6 @@ export class AIService {
           language
         );
       } else {
-        // Direct API call (requires user's API key)
         return await this.callDirectAPI(
           structuralSummary,
           originalCode,
@@ -68,7 +95,7 @@ export class AIService {
         structuralSummary,
         originalCode,
         language,
-        userApiKey: this.config.apiKey, // Optional user key
+        userApiKey: this.config.apiKey,
       }),
     });
 
@@ -223,13 +250,13 @@ Keep the response under 400 words while maintaining high value.`;
   }
 }
 
-// Updated helper functions
+// Updated helper functions with SSR safety
 export const getAIEnhancement = async (
   structuralSummary: string,
   originalCode: string,
   language: string
 ): Promise<string> => {
-  const configData = localStorage.getItem('gitsense_ai_config');
+  const configData = safeLocalStorage.getItem('gitsense_ai_config');
   if (!configData) {
     throw new Error(
       'AI configuration not found. Please configure AI settings first.'
@@ -247,12 +274,14 @@ export const getAIEnhancement = async (
 };
 
 export const isAIConfigured = (): boolean => {
-  const configData = localStorage.getItem('gitsense_ai_config');
+  // Always return false during SSR
+  if (typeof window === 'undefined') return false;
+
+  const configData = safeLocalStorage.getItem('gitsense_ai_config');
   if (!configData) return false;
 
   try {
     const config = JSON.parse(configData);
-    // AI is configured if we have a provider and either serverless mode or API key
     return !!(
       config.provider &&
       (config.useServerless !== false || config.apiKey)
@@ -262,34 +291,34 @@ export const isAIConfigured = (): boolean => {
   }
 };
 
-// Cost estimation helper (updated for serverless)
 export const estimateTokenCost = (
   text: string,
   provider: 'openai' | 'claude'
 ): number => {
-  const tokenCount = Math.ceil(text.length / 4); // Rough estimation
+  const tokenCount = Math.ceil(text.length / 4);
 
-  // Serverless rates (slightly higher than direct API to cover infrastructure)
   const serverlessRates = {
-    openai: 0.2 / 1000000, // $0.20 per 1M tokens
-    claude: 0.3 / 1000000, // $0.30 per 1M tokens
+    openai: 0.2 / 1000000,
+    claude: 0.3 / 1000000,
   };
 
-  // Direct API rates
   const directRates = {
-    openai: 0.15 / 1000000, // $0.15 per 1M tokens for gpt-4o-mini
-    claude: 0.25 / 1000000, // $0.25 per 1M tokens for claude-3-haiku
+    openai: 0.15 / 1000000,
+    claude: 0.25 / 1000000,
   };
 
-  const configData = localStorage.getItem('gitsense_ai_config');
   let useServerless = true;
 
-  if (configData) {
-    try {
-      const config = JSON.parse(configData);
-      useServerless = config.useServerless !== false;
-    } catch {
-      // Default to serverless
+  // Safe localStorage access
+  if (typeof window !== 'undefined') {
+    const configData = safeLocalStorage.getItem('gitsense_ai_config');
+    if (configData) {
+      try {
+        const config = JSON.parse(configData);
+        useServerless = config.useServerless !== false;
+      } catch {
+        // Default to serverless
+      }
     }
   }
 
@@ -297,14 +326,15 @@ export const estimateTokenCost = (
   return tokenCount * rates[provider];
 };
 
-// Usage analytics helper
 export const trackAIUsage = (
   provider: string,
   tokensUsed: number,
   cost: number,
   success: boolean
 ) => {
-  // Track usage for analytics (optional)
+  // Skip during SSR
+  if (typeof window === 'undefined') return;
+
   const usage = {
     timestamp: new Date().toISOString(),
     provider,
@@ -313,27 +343,27 @@ export const trackAIUsage = (
     success,
   };
 
-  // Store in localStorage for user visibility
-  const existingUsage = localStorage.getItem('gitsense_ai_usage') || '[]';
+  const existingUsage = safeLocalStorage.getItem('gitsense_ai_usage') || '[]';
   try {
     const usageHistory = JSON.parse(existingUsage);
     usageHistory.push(usage);
 
-    // Keep only last 100 records
     if (usageHistory.length > 100) {
       usageHistory.splice(0, usageHistory.length - 100);
     }
 
-    localStorage.setItem('gitsense_ai_usage', JSON.stringify(usageHistory));
+    safeLocalStorage.setItem('gitsense_ai_usage', JSON.stringify(usageHistory));
   } catch (error) {
     console.warn('Failed to track AI usage:', error);
   }
 };
 
-// Get usage statistics
 export const getAIUsageStats = () => {
+  // Return null during SSR
+  if (typeof window === 'undefined') return null;
+
   try {
-    const usageData = localStorage.getItem('gitsense_ai_usage');
+    const usageData = safeLocalStorage.getItem('gitsense_ai_usage');
     if (!usageData) return null;
 
     const usage = JSON.parse(usageData);
