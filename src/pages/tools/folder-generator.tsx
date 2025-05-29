@@ -16,7 +16,7 @@ export default function FolderGeneratorPage() {
       </Head>
 
       <Header />
-      <div className="pt-16"> {/* Account for fixed header */}
+      <div className="pt-0"> {/* Account for fixed header */}
         <FolderStructureGenerator />
       </div>
     </>
