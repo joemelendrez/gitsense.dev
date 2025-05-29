@@ -424,7 +424,7 @@ Ready to optimize your development workflow? **[Get Started with GitSense](https
               onClick={clearContent}
               variant="outline"
               size="sm"
-              className="border-red-200 text-red-600 hover:bg-red-50"
+              className="border-red-200 text-red-600 hover:bg-red-50 object-contain"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
