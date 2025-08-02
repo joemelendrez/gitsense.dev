@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '../../store/auth';
 import { Button } from '../ui/Button';
-import { Code, Github, LogOut, Menu, X, ChevronDown, Book, FolderTree } from 'lucide-react';
+import { Code, Github, LogOut, Menu, X, ChevronDown, Book, FolderTree,Images } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { user, profile, signOut } = useAuthStore();
@@ -36,6 +36,12 @@ const tools = [
     icon: FolderTree,                   // NEW TOOL (import from lucide-react)
     description: 'Generate project scaffolds', // NEW TOOL
   },
+  {
+    name: 'Image Converter',           // NEW TOOL
+    href: '/tools/image-converter',    // NEW TOOL
+    icon: Images,                   // NEW TOOL (import from lucide-react)
+    description: 'Convert Image to WebP', // NEW TOOL
+  }
 ];
 
   // Handle dropdown with proper timing
