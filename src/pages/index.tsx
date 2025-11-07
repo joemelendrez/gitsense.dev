@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
-import { Code, Github, Zap, Users, Check } from 'lucide-react';
+import { Code, Github, FolderTree, FileText, Image, Check } from 'lucide-react';
 import Head from 'next/head';
 
 export default function HomePage() {
@@ -55,34 +55,49 @@ export default function HomePage() {
         <section className="py-16 px-4 bg-white">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">
-              Everything You Need for AI-Optimized Development
+              Powerful Developer Tools for AI-Optimized Workflows
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              <Link href="/tools/github-analyzer" className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
                 <Github className="h-12 w-12 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-3">GitHub Analyzer</h3>
                 <p className="text-gray-600">
                   Instantly understand any repository structure. Analyze public
                   and private repos with intelligent depth control.
                 </p>
-              </div>
-              <div className="text-center p-6">
+              </Link>
+              <Link href="/tools/code-summarizer" className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
                 <Code className="h-12 w-12 text-purple-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-3">Code Summarizer</h3>
                 <p className="text-gray-600">
                   Extract functions, classes, and key logic. Generate perfect AI
                   context from any codebase.
                 </p>
-              </div>
-              <div className="text-center p-6">
-                <Zap className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-3">AI Enhancement</h3>
+              </Link>
+              <Link href="/tools/folder-generator" className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+                <FolderTree className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-3">Folder Generator</h3>
                 <p className="text-gray-600">
-                  Get intelligent insights and recommendations. Optimize your
-                  prompts for better AI conversations.
+                  Convert text-based folder structures into downloadable project
+                  scaffolds. Perfect for rapid prototyping.
                 </p>
-              </div>
-              
+              </Link>
+              <Link href="/tools/markdown-renderer" className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+                <FileText className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-3">Markdown Renderer</h3>
+                <p className="text-gray-600">
+                  Create beautiful markdown documentation with live preview,
+                  rich text copying, and export options.
+                </p>
+              </Link>
+              <Link href="/tools/image-converter" className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+                <Image className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-3">Image Converter</h3>
+                <p className="text-gray-600">
+                  Convert PNG and JPG images to WebP format. Reduce file sizes
+                  by up to 80% for better performance.
+                </p>
+              </Link>
             </div>
           </div>
         </section>
