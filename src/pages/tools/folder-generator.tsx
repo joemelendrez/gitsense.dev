@@ -8,7 +8,7 @@ export default function FolderGeneratorPage() {
   return (
     <>
       <Head>
-        <title>Folder Structure Generator - GitSense.dev | Project Scaffolding Tool</title>
+        <title>Project Scaffolder - GitSense.dev | Generate Project Structures</title>
         <meta
           name="description"
           content="Convert text-based folder structures into downloadable project scaffolds. Perfect for setting up new React, Next.js, and development projects."
