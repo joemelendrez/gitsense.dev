@@ -86,8 +86,7 @@ export default function Dashboard() {
                 }
               </h1>
               <p className="text-gray-600">
-                Manage your code analyses and optimize your AI development
-                workflow
+                Manage your analyses and developer tools
               </p>
             </div>
             <div className="text-right">
@@ -212,10 +211,10 @@ export default function Dashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push('/tools/code-summarizer')}
+                  onClick={() => router.push('/tools/folder-generator')}
                 >
                   <Code className="h-4 w-4 mr-1" />
-                  Summarize Code
+                  Scaffold Project
                 </Button>
               </div>
             </div>
@@ -232,8 +231,8 @@ export default function Dashboard() {
                 <Code className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-medium mb-2">No analyses yet</h3>
                 <p className="mb-4">
-                  Start by analyzing a GitHub repository or summarizing some
-                  code
+                  Start by analyzing a GitHub repository or scaffolding a
+                  project
                 </p>
                 <div className="flex justify-center space-x-2">
                   <Button onClick={() => router.push('/tools/github-analyzer')}>

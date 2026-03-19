@@ -14,6 +14,7 @@ export type Database = {
           email: string
           full_name: string | null
           github_token: string | null
+          role: 'user' | 'admin'
           subscription_tier: 'free' | 'pro' | 'team' | 'enterprise'
           usage_count: number
           created_at: string
@@ -24,6 +25,7 @@ export type Database = {
           email: string
           full_name?: string | null
           github_token?: string | null
+          role?: 'user' | 'admin'
           subscription_tier?: 'free' | 'pro' | 'team' | 'enterprise'
           usage_count?: number
           created_at?: string
@@ -34,6 +36,7 @@ export type Database = {
           email?: string
           full_name?: string | null
           github_token?: string | null
+          role?: 'user' | 'admin'
           subscription_tier?: 'free' | 'pro' | 'team' | 'enterprise'
           usage_count?: number
           created_at?: string

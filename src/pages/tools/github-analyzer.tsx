@@ -7,13 +7,13 @@ export default function GitHubAnalyzerPage() {
   return (
     <>
       <Head>
-        <title>GitHub Repository Analyzer - GitSense.dev</title>
-        <meta name="description" content="Analyze any GitHub repository structure for AI context. Extract directory trees, file counts, and project insights to optimize AI conversations." />
-        <meta name="keywords" content="github analyzer, repository analysis, directory tree, code structure, AI context" />
+        <title>Repo Explorer - GitSense.dev | Understand Any Repository</title>
+        <meta name="description" content="Instantly map any GitHub repository's structure, tech stack, and architecture. Analyze public and private repos with intelligent depth control." />
+        <meta name="keywords" content="github analyzer, repository explorer, directory tree, code structure, repo intelligence" />
 
         {/* Open Graph */}
-        <meta property="og:title" content="GitHub Repository Analyzer - GitSense.dev" />
-        <meta property="og:description" content="Analyze any GitHub repository structure for AI context and optimize AI conversations." />
+        <meta property="og:title" content="Repo Explorer - GitSense.dev" />
+        <meta property="og:description" content="Instantly map any GitHub repository's structure, tech stack, and architecture." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://gitsense.dev/tools/github-analyzer" />
 

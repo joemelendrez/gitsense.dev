@@ -1,56 +1,83 @@
-// src/components/layout/Header.tsx - Fixed hover behavior
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '../../store/auth';
+import { useAdmin } from '../../hooks/useAdmin';
 import { Button } from '../ui/Button';
-import { Code, Github, LogOut, Menu, X, ChevronDown, Book, FolderTree,Image} from 'lucide-react';
+import {
+  Github,
+  LogOut,
+  Menu,
+  X,
+  ChevronDown,
+  FolderTree,
+  FileSearch,
+  Shield,
+  ScrollText,
+  Book,
+  Image,
+} from 'lucide-react';
 
 export const Header: React.FC = () => {
   const { user, profile, signOut } = useAuthStore();
+  const isAdmin = useAdmin();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
 
-  // In your Header.tsx, update the tools array:
-const tools = [
-  {
-    name: 'GitHub Analyzer',
-    href: '/tools/github-analyzer',
-    icon: Github,
-    description: 'Analyze repository structure',
-  },
-  {
-    name: 'Code Summarizer',
-    href: '/tools/code-summarizer',
-    icon: Code,
-    description: 'Optimize code for AI',
-  },
-  {
-    name: 'Markdown Renderer',
-    href: '/tools/markdown-renderer',
-    icon: Book,
-    description: 'Convert markdown to rich text',
-  },
-  {
-    name: 'Folder Generator',           // NEW TOOL
-    href: '/tools/folder-generator',    // NEW TOOL
-    icon: FolderTree,                   // NEW TOOL (import from lucide-react)
-    description: 'Generate project scaffolds', // NEW TOOL
-  },
-  {
-    name: 'Image Converter',           // NEW TOOL
-    href: '/tools/image-converter',    // NEW TOOL
-    icon: Image,                   // NEW TOOL (import from lucide-react)
-    description: 'Convert Image to WebP', // NEW TOOL
-  }
-];
+  const publicTools = [
+    {
+      name: 'Repo Explorer',
+      href: '/tools/github-analyzer',
+      icon: Github,
+      description: 'Map any repository structure',
+    },
+    {
+      name: 'Codebase Docs',
+      href: '/tools/codebase-docs',
+      icon: FileSearch,
+      description: 'Generate onboarding documentation',
+    },
+    {
+      name: 'Dependency Auditor',
+      href: '/tools/dependency-auditor',
+      icon: Shield,
+      description: 'Scan for vulnerable dependencies',
+    },
+    {
+      name: 'Project Scaffolder',
+      href: '/tools/folder-generator',
+      icon: FolderTree,
+      description: 'Generate project structures',
+    },
+    {
+      name: 'Changelog Generator',
+      href: '/tools/changelog-generator',
+      icon: ScrollText,
+      description: 'Create release notes from commits',
+    },
+  ];
 
-  // Handle dropdown with proper timing
+  const adminTools = [
+    {
+      name: 'Markdown Renderer',
+      href: '/tools/markdown-renderer',
+      icon: Book,
+      description: 'Render and export markdown',
+    },
+    {
+      name: 'Image Converter',
+      href: '/tools/image-converter',
+      icon: Image,
+      description: 'Convert images to WebP',
+    },
+  ];
+
+  const tools = isAdmin ? [...publicTools, ...adminTools] : publicTools;
+
   const handleDropdownEnter = () => {
     setIsToolsDropdownOpen(true);
   };
 
   const handleDropdownLeave = () => {
-    // Small delay to prevent flickering when moving between elements
     setTimeout(() => {
       setIsToolsDropdownOpen(false);
     }, 100);
@@ -66,9 +93,9 @@ const tools = [
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Code className="h-8 w-8 text-blue-600" />
+            <Github className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold text-gray-900">
-              GitSense.dev
+              GitSense
             </span>
           </Link>
 
@@ -94,7 +121,7 @@ const tools = [
 
               {isToolsDropdownOpen && (
                 <div className="absolute top-full left-0 w-80 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                  {tools.map((tool) => (
+                  {publicTools.map((tool) => (
                     <Link
                       key={tool.href}
                       href={tool.href}
@@ -112,6 +139,34 @@ const tools = [
                       </div>
                     </Link>
                   ))}
+                  {isAdmin && (
+                    <>
+                      <div className="border-t border-gray-200 my-2" />
+                      <div className="px-4 py-1">
+                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Admin Tools
+                        </span>
+                      </div>
+                      {adminTools.map((tool) => (
+                        <Link
+                          key={tool.href}
+                          href={tool.href}
+                          className="flex items-start space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsToolsDropdownOpen(false)}
+                        >
+                          <tool.icon className="h-5 w-5 text-gray-500 mt-0.5" />
+                          <div>
+                            <div className="font-medium text-gray-700">
+                              {tool.name}
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              {tool.description}
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>

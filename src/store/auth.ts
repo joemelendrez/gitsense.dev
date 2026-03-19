@@ -100,6 +100,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 session.user.user_metadata?.full_name ||
                 session.user.user_metadata?.name ||
                 null,
+              role: 'user',
               subscription_tier: 'free',
               usage_count: 0,
             })
