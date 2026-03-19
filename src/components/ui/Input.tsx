@@ -1,5 +1,5 @@
 // src/components/ui/Input.tsx
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { clsx } from 'clsx';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -8,14 +8,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   helperText?: string;
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input = forwardRef<HTMLInputElement, InputProps>(({
   label,
   error,
   helperText,
   className,
   id,
   ...props
-}) => {
+}, ref) => {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
   return (
@@ -29,6 +29,7 @@ export const Input: React.FC<InputProps> = ({
         </label>
       )}
       <input
+        ref={ref}
         id={inputId}
         className={clsx(
           'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400',
@@ -44,4 +45,6 @@ export const Input: React.FC<InputProps> = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
