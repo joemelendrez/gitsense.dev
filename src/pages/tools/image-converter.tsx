@@ -1,12 +1,11 @@
 import React from 'react';
 import Head from 'next/head';
 import { Header } from '../../components/layout/Header';
-import { AdminGate } from '../../components/AdminGate';
 import ImageConverter from '../../components/tools/ImageConverter';
 
 export default function ImageConverterPage() {
   return (
-    <AdminGate>
+    <>
       <Head>
         <title>Image to WebP Converter - GitSense.dev</title>
         <meta
@@ -23,6 +22,6 @@ export default function ImageConverterPage() {
           <ImageConverter />
         </main>
       </div>
-    </AdminGate>
+    </>
   );
 }
