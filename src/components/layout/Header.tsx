@@ -54,6 +54,12 @@ export const Header: React.FC = () => {
       icon: ScrollText,
       description: 'Create release notes from commits',
     },
+    {
+      name: 'Image Converter',
+      href: '/tools/image-converter',
+      icon: Image,
+      description: 'Convert images to WebP',
+    },
   ];
 
   const adminTools = [
@@ -62,12 +68,6 @@ export const Header: React.FC = () => {
       href: '/tools/markdown-renderer',
       icon: Book,
       description: 'Render and export markdown',
-    },
-    {
-      name: 'Image Converter',
-      href: '/tools/image-converter',
-      icon: Image,
-      description: 'Convert images to WebP',
     },
   ];
 
