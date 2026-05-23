@@ -145,7 +145,8 @@ const ImageConverter = () => {
   const downloadImage = (image: ConvertedImage) => {
     const link = document.createElement('a');
     link.href = image.webpUrl;
-    link.download = `${image.originalFile.name.split('.')[0]}.webp`;
+    const baseName = image.originalFile.name.replace(/\.[^.]+$/, '');
+    link.download = `${baseName}.webp`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
