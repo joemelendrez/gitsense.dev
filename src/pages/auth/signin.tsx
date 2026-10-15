@@ -25,7 +25,7 @@ export default function SignIn() {
     try {
       await signIn(data.email, data.password)
       toast.success('Welcome back!')
-      router.push('/dashboard')
+      router.push('/app/')
     } catch (error: any) {
       toast.error(error.message || 'Sign in failed')
     } finally {
