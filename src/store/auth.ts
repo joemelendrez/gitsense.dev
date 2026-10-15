@@ -2,6 +2,17 @@
 import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { api, Account } from '../lib/api';
+
+// Keeps the old profile shape the Header and older pages read.
+function toProfile(account: Account) {
+  return {
+    full_name: account.profile.full_name,
+    role: account.profile.role,
+    subscription_tier: account.plan,
+    usage_count: account.docsUsed,
+  };
+}
 
 interface AuthState {
   user: User | null;
@@ -11,7 +22,8 @@ interface AuthState {
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signInWithProvider: (provider: 'github' | 'google') => Promise<void>;
   signOut: () => Promise<void>;
-  updateProfile: (updates: any) => Promise<void>;
+  account: Account | null;
+  refreshAccount: () => Promise<void>;
   initialize: () => Promise<void>;
 }
 
@@ -47,7 +59,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/app/`,
       },
     });
     if (error) throw error;
@@ -56,23 +68,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    set({ user: null, profile: null });
+    set({ user: null, profile: null, account: null });
   },
 
-  updateProfile: async (updates: any) => {
+  account: null,
+
+  refreshAccount: async () => {
     const { user } = get();
-    if (!user) throw new Error('No user found');
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
-
-    if (error) throw error;
-
-    set((state) => ({
-      profile: { ...state.profile, ...updates },
-    }));
+    if (!user) return;
+    try {
+      const account = await api<Account>('account');
+      set({ account, profile: toProfile(account) });
+    } catch (error) {
+      console.error('Could not load account', error);
+    }
   },
 
   initialize: async () => {
@@ -82,40 +91,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } = await supabase.auth.getSession();
 
       if (session?.user) {
-        // Get or create profile
-        let { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error && error.code === 'PGRST116') {
-          // Profile doesn't exist, create it
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: session.user.id,
-              email: session.user.email!,
-              full_name:
-                session.user.user_metadata?.full_name ||
-                session.user.user_metadata?.name ||
-                null,
-              role: 'user',
-              subscription_tier: 'free',
-              usage_count: 0,
-            })
-            .select()
-            .single();
-
-          if (createError) throw createError;
-          profile = newProfile;
-        } else if (error) {
-          throw error;
-        }
-
-        set({ user: session.user, profile, loading: false });
+        set({ user: session.user, loading: false });
+        // Plan, usage and role come from the server (service role), so a
+        // browser can't grant itself a plan by writing to a table.
+        await get().refreshAccount();
       } else {
-        set({ user: null, profile: null, loading: false });
+        set({ user: null, profile: null, account: null, loading: false });
       }
     } catch (error) {
       console.error('Auth initialization error:', error);

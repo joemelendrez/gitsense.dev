@@ -172,10 +172,10 @@ export const Header: React.FC = () => {
             </div>
 
             <Link
-              href="/dashboard"
+              href="/app/"
               className="text-gray-700 hover:text-blue-600 transition-colors"
             >
-              Dashboard
+              Docs
             </Link>
             <Link
               href="/pricing"
@@ -265,11 +265,11 @@ export const Header: React.FC = () => {
               {/* Navigation Links */}
               <div className="border-t border-gray-200 pt-3">
                 <Link
-                  href="/dashboard"
+                  href="/app/"
                   className="block px-3 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  Docs
                 </Link>
                 <Link
                   href="/pricing"

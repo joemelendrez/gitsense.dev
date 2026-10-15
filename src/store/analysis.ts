@@ -32,7 +32,7 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
     set({ loading: true });
     try {
       const { data, error } = await supabase
-        .from('analyses')
+        .from('gs_analyses')
         .insert(analysis)
         .select()
         .single();
@@ -54,7 +54,7 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
     set({ loading: true });
     try {
       const { data, error } = await supabase
-        .from('analyses')
+        .from('gs_analyses')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -70,7 +70,7 @@ export const useAnalysisStore = create<AnalysisState>((set, get) => ({
 
   deleteAnalysis: async (id: string) => {
     try {
-      const { error } = await supabase.from('analyses').delete().eq('id', id);
+      const { error } = await supabase.from('gs_analyses').delete().eq('id', id);
 
       if (error) throw error;
 
